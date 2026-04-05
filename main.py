@@ -14,7 +14,6 @@ from nextcord.utils import get
 from apis import *
 import random
 from datetime import datetime
-TOKEN = os.getenv("TOKEN")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +25,7 @@ SUPPORT_LOG_CHANNEL_ID = 1195278351665991760  # Replace with your support logs c
 LOUNGE_ID = 1021619738306162690
 REVIEWS_ID = 1309911036123414609  # Replace with your reviews channel ID
 PROMOTION_ID = 1309857031087329391
-INFRACTION_ID = 1309857105745936515
+ACTION_ID = 1309857105745936515
 
 intents = nextcord.Intents.default()
 intents.message_content = True
@@ -75,23 +74,69 @@ async def on_member_join(member):
     member_count = guild.member_count
     channel = nextcord.utils.get(guild.text_channels, id=LOUNGE_ID)
     if channel:
-        await channel.send(f"<:CD_wave:1310206456712269876> Welcome to Comet Designs, {member.mention}! You are the `{member_count}` member. To place an order, please head over to <#1224486146046955590>. For more information, visit <#1021622027297239171>.")
+        # Create the welcome message
+        welcome_message = (
+            "<:CD_wave:1310206456712269876> *Welcome to Comet Designs, {0.mention}!*  \n"
+            "-# We hope you will enjoy being part of our community!"
+        ).format(member)
+
+        # Create the buttons
+        dashboard_button = Button(
+            label="Dashboard",
+            url="https://discord.com/channels/1021619736292904971/1021622027297239171",
+            style=ButtonStyle.link
+        )
+        order_button = Button(
+            label="Order here",
+            url="https://discord.com/channels/1021619736292904971/1224486146046955590",
+            style=ButtonStyle.link
+        )
+        member_count_button = Button(
+            label=f"Member Count: {member_count}",
+            style=ButtonStyle.gray,
+            disabled=True
+        )
+
+        view = View()
+        view.add_item(dashboard_button)
+        view.add_item(order_button)
+        view.add_item(member_count_button)
+
+        await channel.send(welcome_message, view=view)
     else:
         logging.warning("Channel not found. ----------------------")  
 
+def safe_load_json(path, default):
+    try:
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+                if not content:
+                    # empty file -> initialize with default
+                    with open(path, 'w', encoding='utf-8') as wf:
+                        json.dump(default, wf)
+                    return default
+                return json.loads(content)
+        else:
+            return default
+    except json.JSONDecodeError:
+        logging.warning(f"Invalid JSON in {path}, resetting to default.")
+        try:
+            with open(path, 'w', encoding='utf-8') as wf:
+                json.dump(default, wf)
+        except Exception as e:
+            logging.error(f"Failed to reset {path}: {e}")
+        return default
+    except Exception as e:
+        logging.error(f"Error loading {path}: {e}")
+        return default
+
 # Load permanent order logs from file
-if os.path.exists(PERM_ORDER_LOGS_FILE):
-    with open(PERM_ORDER_LOGS_FILE, 'r') as file:
-        perm_order_logs = json.load(file)
-else:
-    perm_order_logs = {}
+perm_order_logs = safe_load_json(PERM_ORDER_LOGS_FILE, {})
 
 # Load permanent support logs from file
-if os.path.exists(PERM_SUPPORT_LOGS_FILE):
-    with open(PERM_SUPPORT_LOGS_FILE, 'r') as file:
-        perm_support_logs = json.load(file)
-else:
-    perm_support_logs = {}
+perm_support_logs = safe_load_json(PERM_SUPPORT_LOGS_FILE, {})
+linked_accounts = safe_load_json(LINKED_ACCOUNTS_FILE, {})
 
 # Save order logs to file
 def save_order_logs():
@@ -125,17 +170,16 @@ async def review(
         embed = nextcord.Embed(title="**<:CD_partner:1310207556903501844> Review**", color=0xff913a)
         embed.set_author(name=f"Review from {interaction.user}", icon_url=interaction.user.avatar.url)
         embed.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1312520876239097876/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=674ccbd2&is=674b7a52&hm=f6228f89e71982bdbcd236455249a0f0fba8796855434204803f0d108e8c7157&=&format=webp&quality=lossless&width=1439&height=100")
-        embed.add_field(name="**<:CD_dot:1310207495691567145> Designer:**", value=designer.mention, inline=True)
-        embed.add_field(name="**<:CD_dot:1310207495691567145> Product:**", value=product, inline=True)
-        embed.add_field(name="**<:CD_dot:1310207495691567145> Rating:**", value="".join(["<:CD_Star:1337489151154454529>"] * rating), inline=True)
-        embed.add_field(name="**<:CD_dot:1310207495691567145> Extra Notes:**", value=extra_notes, inline=False)
+        embed.add_field(name="**<:CD_dot:1310207495691567145>Designer:**", value=designer.mention, inline=True)
+        embed.add_field(name="**<:CD_dot:1310207495691567145>Product:**", value=product, inline=True)
+        embed.add_field(name="**<:CD_dot:1310207495691567145>Rating:**", value="".join(["<:CD_Star:1337489151154454529>"] * rating), inline=True)
+        embed.add_field(name="**<:CD_dot:1310207495691567145>Extra Notes:**", value=extra_notes, inline=False)
         embed.set_footer(text="Thank you for your review", icon_url="https://media.discordapp.net/attachments/1307830343482478725/1307837864914059314/CDLOGO_MGMT_BLACK.png?ex=674c3d2d&is=674aebad&hm=f3b757b37d41bcb9d68f8c408fe55c800b84cb6e3b6bd841a118045435bc51da&=&format=webp&quality=lossless&width=481&height=481")
         embed.timestamp = interaction.created_at
 
         review_channel = client.get_channel(REVIEWS_ID)
         if review_channel:
-            await review_channel.send(designer.mention)
-            await review_channel.send(embed=embed)
+            await review_channel.send(embed=embed, content= f"{designer.mention}")
             await interaction.response.send_message("Review submitted successfully!", ephemeral=True)
         else:
             await interaction.response.send_message("Review channel not found.", ephemeral=True)
@@ -174,7 +218,7 @@ async def order_log(
         embed.add_field(name="<:CD_robux:1310207300522213507> Original Price", value=f"${original_price:.2f}", inline=True)
         embed.add_field(name="<:CD_robux:1310207300522213507> Total Price", value=f"${total_price:.2f}", inline=True)
         embed.add_field(name="<:CD_settings:1310207018161934376> Ticket ID", value=ticket_id, inline=True)
-        embed.add_field(name="<:CD_dot:1310207495691567145> Note", value=note, inline=False)
+        embed.add_field(name="<:CD_dot:1310207495691567145>Note", value=note, inline=False)
         embed.set_footer(text=f"Logged by {interaction.user}", icon_url=interaction.user.avatar.url)
         
         log_channel = client.get_channel(ORDER_LOG_CHANNEL_ID)
@@ -236,7 +280,7 @@ async def support_log(
         embed.add_field(name="<:CD_time:1310206753379450910> Date of Opening", value=date_of_opening, inline=True)
         embed.add_field(name="<:CD_time:1310206753379450910> Date of Closing", value=date_of_closing, inline=True)
         embed.add_field(name="<:CD_settings:1310207018161934376> Ticket ID", value=ticket_id, inline=True)
-        embed.add_field(name="<:CD_dot:1310207495691567145> Note", value=note, inline=False)
+        embed.add_field(name="<:CD_dot:1310207495691567145>Note", value=note, inline=False)
         embed.set_footer(text=f"Logged by {interaction.user}", icon_url=interaction.user.avatar.url)
 
         log_channel = client.get_channel(SUPPORT_LOG_CHANNEL_ID)
@@ -285,14 +329,14 @@ async def infract(
 
     try:
         # Create embed message
-        embed = nextcord.Embed(title=f"<:CD_Red:1108401228720918538> {infraction}", color=0xff0808)
+        embed = nextcord.Embed(title=f"{infraction}", color=0xff0808)
         embed.set_image(url="https://media.discordapp.net/attachments/1256596793999888447/1310712746962063370/Sin_titulo_72_x_9_in_72_x_5_in_1.png?ex=674c269e&is=674ad51e&hm=0d15dfda191f485821f4ebf88cc4800278505db750303b6ba7e1cedcf7f80375&=&format=webp&quality=lossless&width=1439&height=100")
-        embed.add_field(name="<:CD_dot:1310207495691567145> Username", value=username.mention, inline=False)
-        embed.add_field(name="<:CD_dot:1310207495691567145> Reason", value=reason, inline=False)
+        embed.add_field(name="<:CD_dot:1310207495691567145>Username", value=username.mention, inline=False)
+        embed.add_field(name="<:CD_dot:1310207495691567145>Reason", value=reason, inline=False)
         embed.set_footer(text=f"Authorised by {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
 
         # Send embed message in the infraction channel
-        infraction_channel = client.get_channel(INFRACTION_ID)
+        infraction_channel = client.get_channel(ACTION_ID)
         if infraction_channel:
             await infraction_channel.send(content=f"{username.mention}", embed=embed)
             await interaction.response.send_message("✅ Infraction has been successfully logged.", ephemeral=True)
@@ -480,12 +524,12 @@ async def demotion(
             await username.remove_roles(old_rank)
 
             embed = nextcord.Embed(
-                title="<:CD_Red:1108401228720918538> DEMOTION",
+                title="DEMOTION",
                 description=(
-                    f"**<:CD_dot:1310207495691567145> Username:** {username.mention}\n"
-                    f"**<:CD_line2:1310234611946881054> Old Rank:** {old_rank.mention}\n"
-                    f"**<:CD_line2:1310234611946881054> New Rank:** {new_rank.mention}\n"
-                    f"**<:CD_line3:1310234411404496927> Reason:** {reason}"
+                    f"**<:CD_dot:1310207495691567145>Username:** {username.mention}\n"
+                    f"**<:mid:1411651635058577519> Old Rank:** {old_rank.mention}\n"
+                    f"**<:mid:1411651635058577519> New Rank:** {new_rank.mention}\n"
+                    f"**<:bottom:1411651619057307779> Reason:** {reason}"
                 ),
                 color=0xff0808
             )
@@ -529,9 +573,9 @@ async def promotion(
 
         embed = nextcord.Embed(title="<:CD_Light:1310205970596499487> Promotion", color=0xff913a)
         embed.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1312520876239097876/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=674ccbd2&is=674b7a52&hm=f6228f89e71982bdbcd236455249a0f0fba8796855434204803f0d108e8c7157&=&format=webp&quality=lossless&width=1439&height=100")
-        embed.add_field(name="<:CD_dot:1310207495691567145> Username", value=username.mention, inline=True)
-        embed.add_field(name="<:CD_dot:1310207495691567145> New Rank", value=new_rank.mention, inline=True)
-        embed.add_field(name="<:CD_dot:1310207495691567145> Reason", value=reason, inline=False)
+        embed.add_field(name="<:CD_dot:1310207495691567145>Username", value=username.mention, inline=True)
+        embed.add_field(name="<:CD_dot:1310207495691567145>New Rank", value=new_rank.mention, inline=True)
+        embed.add_field(name="<:CD_dot:1310207495691567145>Reason", value=reason, inline=False)
         embed.set_footer(text=f"Authorised by {interaction.user.display_name}", icon_url=interaction.user.avatar.url)
 
         promotion_channel = client.get_channel(PROMOTION_ID)
@@ -593,7 +637,7 @@ async def add_staff(
             embed.add_field(name="<:CD_member:1337489055889227876> Username", value=user.mention, inline=False)
             embed.add_field(name="<:CD_roblox:1310207355002159175> Roblox Username", value=roblox_username, inline=False)
             embed.add_field(name="<:CD_bag:1310235389126115349> Category", value=category, inline=False)
-            embed.add_field(name="<:CD_dot:1310207495691567145> Date of Joining", value=date_of_joining, inline=False)
+            embed.add_field(name="<:CD_dot:1310207495691567145>Date of Joining", value=date_of_joining, inline=False)
             embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1308444839905595392/Sin_titulo_50_x_8_in_4.png?ex=6791aef7&is=67905d77&hm=a7d9123dc9d275e26f2debd9543d04d01847210112577da4afedd3652f3c088c&=&format=webp&quality=lossless&width=1439&height=173")
 
             await interaction.response.send_message(embed=embed, ephemeral=False)
@@ -657,7 +701,7 @@ async def remove_staff(
                 file.truncate()
                 json.dump(staff_database, file, indent=4)
 
-            embed = nextcord.Embed(title="<:CD_Red:1108401228720918538> Staff Member Removed", color=0xff913a)
+            embed = nextcord.Embed(title="Staff Member Removed", color=0xff913a)
             embed.add_field(name="<:CD_member:1337489055889227876> Username", value=user.mention, inline=False)
             embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1308444839905595392/Sin_titulo_50_x_8_in_4.png?ex=6791aef7&is=67905d77&hm=a7d9123dc9d275e26f2debd9543d04d01847210112577da4afedd3652f3c088c&=&format=webp&quality=lossless&width=1439&height=173")
 
@@ -739,8 +783,8 @@ async def view_staff(
                 embed.add_field(name="<:CD_member:1337489055889227876> Username", value=staff_member["Username"], inline=False)
                 embed.add_field(name="<:CD_roblox:1310207355002159175> Roblox Username", value=staff_member["Roblox Username"], inline=False)
                 embed.add_field(name="<:CD_bag:1310235389126115349> Category", value=staff_member["Category"], inline=False)
-                embed.add_field(name="<:CD_dot:1310207495691567145> Date of Joining", value=staff_member["Date of Joining"], inline=False)
-                embed.add_field(name="<:CD_dot:1310207495691567145> Group Status", value=group_status, inline=False)
+                embed.add_field(name="<:CD_dot:1310207495691567145>Date of Joining", value=staff_member["Date of Joining"], inline=False)
+                embed.add_field(name="<:CD_dot:1310207495691567145>Group Status", value=group_status, inline=False)
                 embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1308444839905595392/Sin_titulo_50_x_8_in_4.png")
                 await interaction.response.send_message(embed=embed, ephemeral=False)
             else:
@@ -752,10 +796,10 @@ async def view_staff(
                 embed.add_field(
                     name=f"<:CD_member:1337489055889227876> {member['Username']}",
                     value=(
-                        f"<:CD_dot:1310207495691567145> Roblox Username: {member['Roblox Username']}\n"
-                        f"<:CD_dot:1310207495691567145> Category: {member['Category']}\n"
-                        f"<:CD_dot:1310207495691567145> Date of Joining: {member['Date of Joining']}\n"
-                        f"<:CD_dot:1310207495691567145> Group Status: {group_status}"
+                        f"<:CD_dot:1310207495691567145>Roblox Username: {member['Roblox Username']}\n"
+                        f"<:CD_dot:1310207495691567145>Category: {member['Category']}\n"
+                        f"<:CD_dot:1310207495691567145>Date of Joining: {member['Date of Joining']}\n"
+                        f"<:CD_dot:1310207495691567145>Group Status: {group_status}"
                     ),
                     inline=False
                 )
@@ -787,8 +831,8 @@ async def rank_request(
 
         embed = nextcord.Embed(title="Rank Request Submitted", color=0xff913a)
         embed.add_field(name="<:CD_member:1337489055889227876> Discord User", value=f"{interaction.user} ({interaction.user.id})", inline=False)
-        embed.add_field(name="<:CD_dot:1310207495691567145> Roblox Username", value=roblox_username, inline=False)
-        embed.add_field(name="<:CD_dot:1310207495691567145> Rank Requesting", value=rank_requesting, inline=False)
+        embed.add_field(name="<:CD_dot:1310207495691567145>Roblox Username", value=roblox_username, inline=False)
+        embed.add_field(name="<:CD_dot:1310207495691567145>Rank Requesting", value=rank_requesting, inline=False)
         embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1308444839905595392/Sin_titulo_50_x_8_in_4.png")
         embed.set_footer(text=f"Requested at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
