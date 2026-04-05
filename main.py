@@ -31,6 +31,8 @@ intents = nextcord.Intents.default()
 intents.message_content = True
 intents.members = True
 
+token = os.environ.get("TOKEN")
+
 client = commands.Bot(command_prefix='cd!', intents=intents)
 
 # File to store order logs
@@ -846,4 +848,4 @@ async def rank_request(
         logging.error(f"Error in rank_request command: {e}")
         await interaction.response.send_message("An error occurred while submitting your rank request.", ephemeral=True)
         
-client.run(TOKEN)
+client.run(token)
