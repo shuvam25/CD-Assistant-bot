@@ -1,3 +1,5 @@
+token = os.environ.get("TOKEN")
+
 import nextcord
 from nextcord.ext import commands
 from nextcord import Interaction, SlashOption, Attachment, ButtonStyle
@@ -31,7 +33,6 @@ intents = nextcord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-token = os.environ.get("TOKEN")
 
 client = commands.Bot(command_prefix='cd!', intents=intents)
 
