@@ -1,3 +1,5 @@
+import os
+
 token = os.environ.get("TOKEN")
 
 import nextcord
@@ -7,7 +9,6 @@ from nextcord.utils import get
 import json
 import nextcord
 from nextcord.ext import commands
-import os
 import logging
 import requests
 from nextcord.ui import Button, View, Modal, TextInput
