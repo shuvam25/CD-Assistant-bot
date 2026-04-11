@@ -867,19 +867,8 @@ async def rank_request(
 async def ticket_menu_slash(
     interaction: Interaction,
     disable: str = SlashOption(
-        description="Select options to disable",
-        required=False,
-        choices=[
-            "Support",
-            "Livery",
-            "Clothing",
-            "Graphics",
-            "Discord Utilities",
-            "Development Assets",
-            "Collaboration",
-            "Reports & Appeals",
-            "Misc"
-        ]
+        description="Enter options to disable (comma-separated)",
+        required=False
     )
 ):
     TICKET_ADMIN
@@ -913,22 +902,18 @@ async def ticket_menu_slash(
         select = Select(
             placeholder="Please Select",
             options=[
-                nextcord.SelectOption(label="Support", description="Concern & Queries", emoji="<:CD_dot:1310207495691567145>"),
-                nextcord.SelectOption(label="Livery", description="Order", emoji="<:CD_dot:1310207495691567145>"),
-                nextcord.SelectOption(label="Clothing", description="Order", emoji="<:CD_dot:1310207495691567145>"),
-                nextcord.SelectOption(label="Graphics", description="Order", emoji="<:CD_dot:1310207495691567145>"),
-                nextcord.SelectOption(label="Discord Utilities", description="Order", emoji="<:CD_dot:1310207495691567145>"),
-                nextcord.SelectOption(label="Development Assets", description="Order", emoji="<:CD_dot:1310207495691567145>"),
-                nextcord.SelectOption(label="Collaboration", description="Management", emoji="<:CD_dot:1310207495691567145>"),
-                nextcord.SelectOption(label="Reports & Appeals", description="Management", emoji="<:CD_dot:1310207495691567145>"),
-                nextcord.SelectOption(label="Misc", description="For other inquiries", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Please Select", description="Make a selection", emoji="<:CD_dot:1310207495691567145>", default=True),
+                nextcord.SelectOption(label="Support", description="Concern & Queries", emoji="<:CD_dot:1310207495691567145>", default=False),
+                nextcord.SelectOption(label="Livery", description="Order", emoji="<:CD_dot:1310207495691567145>", default=False),
+                nextcord.SelectOption(label="Clothing", description="Order", emoji="<:CD_dot:1310207495691567145>", default=False),
+                nextcord.SelectOption(label="Graphics", description="Order", emoji="<:CD_dot:1310207495691567145>", default=False),
+                nextcord.SelectOption(label="Discord Utilities", description="Order", emoji="<:CD_dot:1310207495691567145>", default=False),
+                nextcord.SelectOption(label="Development Assets", description="Order", emoji="<:CD_dot:1310207495691567145>", default=False),
+                nextcord.SelectOption(label="Collaboration", description="Management", emoji="<:CD_dot:1310207495691567145>", default=False),
+                nextcord.SelectOption(label="Reports & Appeals", description="Management", emoji="<:CD_dot:1310207495691567145>", default=False),
+                nextcord.SelectOption(label="Misc", description="For other inquiries", emoji="<:CD_dot:1310207495691567145>", default=False),
             ]
         )
-
-        # Disable options dynamically
-        for option in select.options:
-            if option.label.lower() in disable_list:
-                option.default = False  # Ensure no option is pre-selected
 
         user_cooldowns = {}
 
@@ -998,6 +983,7 @@ async def ticket_menu_slash(
             await interaction.response.send_message("Channel not found.", ephemeral=True)
     else:
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+
 
 ## CUSTOM TICKET RESPONSE ALIASES -------------------------------------------------------------------------------
 
