@@ -11,12 +11,17 @@ import nextcord
 from nextcord.ext import commands
 import logging
 import requests
-from nextcord.ui import Button, View, Modal, TextInput
+from nextcord.ui import Button, Select, View, Modal, TextInput
 import requests
 from nextcord.utils import get
 from apis import *
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
+import time
+import asyncio
+import subprocess
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -33,8 +38,6 @@ ACTION_ID = 1309857105745936515
 intents = nextcord.Intents.default()
 intents.message_content = True
 intents.members = True
-
-
 client = commands.Bot(command_prefix='cd!', intents=intents)
 
 # File to store order logs
@@ -65,6 +68,11 @@ if os.path.exists(LINKED_ACCOUNTS_FILE):
         linked_accounts = json.load(file)
 else:
     linked_accounts = {}
+
+# Restrict commands to STAFF_ID role holders
+STAFF_ID = 123456789012345678  # Replace with the actual role ID
+
+
 
 @client.event
 async def on_ready():
@@ -849,5 +857,332 @@ async def rank_request(
     except Exception as e:
         logging.error(f"Error in rank_request command: {e}")
         await interaction.response.send_message("An error occurred while submitting your rank request.", ephemeral=True)
-        
-client.run(token)
+
+
+
+# TICKET SYSTEM USING TICKET TOOLS ==============================
+# Command to send the embed message with dropdown menu
+# Adding a slash command version of the TicketMenu with optional input to enable/disable select options
+@client.slash_command(name="ticket_menu", guild_ids=[GUILD_ID], description="Send the ticket menu with dropdown options")
+async def ticket_menu_slash(
+    interaction: Interaction,
+    disable: str = SlashOption(
+        description="Select options to disable",
+        required=False,
+        choices=[
+            "Support",
+            "Livery",
+            "Clothing",
+            "Graphics",
+            "Discord Utilities",
+            "Development Assets",
+            "Collaboration",
+            "Reports & Appeals",
+            "Misc"
+        ]
+    )
+):
+    TICKET_ADMIN
+    TICKET_MGMT 
+    TICKET_CHANNEL_ID  # Channel ID where the command must be sent
+
+    if interaction.channel.id != TICKET_CHANNEL_ID:
+        await interaction.response.send_message("This command can only be used in the specified channel.", ephemeral=True)
+        return
+
+    if any(role.id == TICKET_ADMIN or role.id == TICKET_MGMT for role in interaction.user.roles):
+        # First embed with the specified image
+        first_embed = nextcord.Embed(
+            color=0xff913a
+        )
+        first_embed.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1492219938432094278/CONTACT_US.png?ex=69da899d&is=69d9381d&hm=3afc97a4a1dd2e2947a9a1bde1d38b0aa4facc565b5ef348325b5530136cccd8&=&format=webp&quality=lossless&width=1860&height=465")
+
+        # Second embed with the ticket menu
+        second_embed = nextcord.Embed(
+            description="<:CD_info:1310234839982674014> Kindly select the category that best aligns with your request from the dropdown menu.\n\nAfter opening a ticket, follow the provided instructions to ensure a faster response.\n\n ```Note: Please choose the right category to get the faster and smoother response.```\n -# Please read our Order TOS and Pricing before opening a order ticket. \n -# For support tickets, please provide as much detail as possible to help us assist you effectively.\n -# For management tickets, please be respectful and provide clear information regarding your concern or report.\n\n<:CD_warning:1310207127744411936> **Important:** Avoid creating multiple tickets for the same issue, as this can lead to confusion and delays in our response time.",
+            color=0xff913a
+        )
+        second_embed.add_field(name="<:CD_dot:1310207495691567145> Support", value="<:CD_BP_O:1376241176990187571> Questions\n<:CD_BP_O:1376241176990187571> Concerns", inline=True)
+        second_embed.add_field(name="<:CD_dot:1310207495691567145> Order", value="<:CD_BP_O:1376241176990187571> Livery\n<:CD_BP_O:1376241176990187571> Clothing\n<:CD_BP_O:1376241176990187571> Graphics\n<:CD_BP_O:1376241176990187571> Discord Utilities\n<:CD_BP_O:1376241176990187571> Development Assets", inline=True)
+        second_embed.add_field(name="<:CD_dot:1310207495691567145> Management", value="<:CD_BP_O:1376241176990187571> Reports & Appeals\n<:CD_BP_O:1376241176990187571> Collaboration\n<:CD_BP_O:1376241176990187571> Concerns", inline=True)
+        second_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1315313835174920192/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=69dba277&is=69da50f7&hm=b90e78bc4c5f965037cb4f178228a1b93c069b8dc6af421e749a0cf28990a0d7&=&format=webp&quality=lossless&width=1730&height=120")
+
+        # Parse disabled options
+        disable_list = [opt.strip().lower() for opt in disable.split(",")] if disable else []
+
+        select = Select(
+            placeholder="Please Select",
+            options=[
+                nextcord.SelectOption(label="Support", description="Concern & Queries", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Livery", description="Order", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Clothing", description="Order", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Graphics", description="Order", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Discord Utilities", description="Order", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Development Assets", description="Order", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Collaboration", description="Management", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Reports & Appeals", description="Management", emoji="<:CD_dot:1310207495691567145>"),
+                nextcord.SelectOption(label="Misc", description="For other inquiries", emoji="<:CD_dot:1310207495691567145>"),
+            ]
+        )
+
+        # Disable options dynamically
+        for option in select.options:
+            if option.label.lower() in disable_list:
+                option.default = False  # Ensure no option is pre-selected
+
+        user_cooldowns = {}
+
+        async def select_callback(interaction):
+            user_id = interaction.user.id
+            current_time = time.time()
+            if user_id in user_cooldowns and user_cooldowns[user_id] > current_time:
+                remaining_time = int(user_cooldowns[user_id] - current_time)
+                minutes, seconds = divmod(remaining_time, 60)
+                await interaction.response.send_message(f"<:CD_lock:1310208201521758321> You must wait {minutes} minutes and {seconds} seconds before selecting another option.", ephemeral=True)
+                return
+
+            if select.values[0].lower() in disable_list:
+                await interaction.response.send_message("This category is closed. Please wait until further notice to open a ticket.", ephemeral=True)
+                return
+
+            if select.values[0] == "Support":
+                channel_id = 1492606759741690100
+                message = f"$new {interaction.user.id} Support"
+            elif select.values[0] == "Livery":
+                channel_id = 1492606631266095415
+                message = f"$new {interaction.user.id} Livery"
+            elif select.values[0] == "Clothing":
+                channel_id = 1492606827144413277
+                message = f"$new {interaction.user.id} Clothing"
+            elif select.values[0] == "Graphics":
+                channel_id = 1492606698156982354  # Replace with actual channel ID
+                message = f"$new {interaction.user.id} Graphics"
+            elif select.values[0] == "Discord Utilities":
+                channel_id = 1492606733833605191 # Replace with actual channel ID
+                message = f"$new {interaction.user.id} Discord Utilities"
+            elif select.values[0] == "Development Assets":
+                channel_id = 1492607006492721263  # Replace with actual channel ID
+                message = f"$new {interaction.user.id} Development Assets"
+            elif select.values[0] == "Collaboration":
+                channel_id = 1492607897253839071  # Replace with actual channel ID
+                message = f"$new {interaction.user.id} Collaboration"
+            elif select.values[0] == "Reports & Appeals":
+                channel_id = 1492607897253839071  # Replace with actual channel ID
+                message = f"$new {interaction.user.id} Reports & Appeals"
+            elif select.values[0] == "Misc":
+                channel_id = 1492607897253839071  # Replace with actual channel ID
+                message = f"$new {interaction.user.id} Misc"
+            else:
+                return
+
+            target_channel = client.get_channel(channel_id)
+            if target_channel:
+                await target_channel.send(message)
+                await interaction.response.send_message("Your request has been sent.", ephemeral=True)
+
+                # Set cooldown for the user
+                user_cooldowns[user_id] = current_time + 300  # 5 minutes cooldown
+            else:
+                await interaction.response.send_message("Target channel not found.", ephemeral=True)
+
+        select.callback = select_callback
+        view = View(timeout=None)
+        view.add_item(select)
+
+        channel = client.get_channel(TICKET_CHANNEL_ID)
+        if channel:
+            await channel.send(embed=first_embed)
+            await channel.send(embed=second_embed, view=view)
+            await interaction.response.send_message("Ticket menu sent.", ephemeral=True)
+        else:
+            await interaction.response.send_message("Channel not found.", ephemeral=True)
+    else:
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+
+## CUSTOM TICKET RESPONSE ALIASES -------------------------------------------------------------------------------
+
+# Custom ticket response commands
+from nextcord.ext import commands
+
+# Helper function to create and send an embed
+def create_embed(title, description, color):
+    embed = nextcord.Embed(
+        title=title,
+        description=description,
+        color=color
+    )
+    return embed
+
+# Command: cancel
+@client.command(name="cancel")
+async def cancel(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Order Cancelled",
+        description="*As per your request, you have decided to cancel this order.*\n\n*Have a good rest of your day!*",
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: disrespect
+@client.command(name="disrespect")
+async def disrespect(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Disrespect Not Tolerated",
+        description="We do not tolerate any disrespect within our tickets. You have now been blocked from using our ticketing system in the future.",
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: inactive
+@client.command(name="inactive")
+async def inactive(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Ticket Marked as Inactive",
+        description="Your ticket has been deemed as INACTIVE\nPlease send your order or contact message through using the format or this ticket will be closed.",
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: ooh
+@client.command(name="ooh")
+async def ooh(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Out of Hours",
+        description="Hello, thanks for your message. Currently we are out of hours, meaning most of our support and design staff is unavailable, please expect a response in 2-10 hours.",
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: affiliationprocess
+@client.command(name="affiliationprocess")
+async def affiliationprocess(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Affiliation Process",
+        description=(
+            "```Answer the questions asked below ```\n\n"
+            "Here are some questions you need to answer to further proceed with the affiliation process, We at comet designs take affiliation seriously and we expect our affiliated partners to take it seriously as well.\n\n"
+            "- Why do you want to get affiliated with Comet designs?\n"
+            "- How will the affiliation benefit Comet Designs?\n"
+            "- What do you expect in this affiliation?\n"
+            "- How will this benefit both servers?\n\n"
+            "```Standard Terms```\n"
+            "- Must have a channel dedicated to Comet designs visible to the public at all times and permission to read/write given to Comet designs representatives.\n"
+            "- Our TOS is always applied on any product created by Comet designs.\n"
+            "- Comet designs can terminate affiliation and take away product rights whenever they want to.\n"
+            "- Role called as comet designs must be created and given to the comet representatives with colour - #fa8d3a"
+        ),
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: comet+
+@client.command(name="comet+")
+async def comet_plus(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Cometᐩ Membership",
+        description=(
+            "<:CD_dot:1310207495691567145> To purchase [Cometᐩ](https://www.roblox.com/catalog/105509757002899/comet), click the link and complete your payment.\n"
+            "<:CD_dot:1310207495691567145> After payment, send us proof of purchase, and you'll receive your role!\n"
+            "# <:CD_unlock:1310206715765198928> | Perks\n"
+            "`› Cometᐩ`\n\n"
+            "> `1` __Special__ <@&1309926380624150528> Role\n"
+            "> `2` __Special__ entries for **giveaways**\n"
+            "> `3` Access to **Exclusive chat** and** Exclusive releases**\n"
+            "> `4` Media permission\n"
+            "> `5` __Priority__ in orders"
+        ),
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: delay
+@client.command(name="delay")
+async def delay(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Delay in Response",
+        description="Hello, there is currently a delay in response times due to a high influx of tickets. Please be patient and expect a response soon.",
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: group
+@client.command(name="group")
+async def group(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Official Roblox Group",
+        description="Find our Roblox group here - https://www.roblox.com/communities/16394588/Official-Comet-Designs#!/about",
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: nodesigner
+@client.command(name="nodesigner")
+async def nodesigner(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="No Designer Available",
+        description=(
+            "*No designer Available*\n"
+            "Hello!\n"
+            "There is currently no designers available for this order. Please expect further delays."
+        ),
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+# Command: ad
+@client.command(name="ad")
+async def ad(ctx):
+    embed = nextcord.Embed(
+        title="**COMET DESIGNS AD**",
+        description="```# **COMET DESIGNS**\n ***__Your Ideas, Launched Into Orbit__***\n\n``About us``\n<:CD_dot:1310207495691567145> We are a premier design server specializing in creating ERLC roleplay server assets. Our passion is to bring creativity and functionality together for your roleplay experience.\n\n``Services``\n<:CD_dot:1310207495691567145> Liveries designs    |    Clothing designs\n<:CD_dot:1310207495691567145> Graphics designs    |    Discord services\n\n``Explore more``\n<:CD_dot:1310207495691567145> [Discord](https://discord.gg/cYVDd5b5rn)\n<:CD_dot:1310207495691567145> [Store](https://packables.store/652a9f90c7a0a2091d0a906e)\n<:CD_dot:1310207495691567145> [Roblox](https://www.roblox.com/communities/16394588/Official-Comet-Designs#!/about)```",
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+
+# Run the bot
+client.run(TOKEN)
