@@ -1,6 +1,6 @@
 import os
 
-TOKEN = os.environ.get("TOKEN")
+token = os.environ.get("TOKEN")
 
 import nextcord
 from nextcord.ext import commands
@@ -1185,4 +1185,4 @@ async def ad(ctx):
     await ctx.send(embed=embed)
 
 # Run the bot
-client.run(TOKEN)
+client.run(token)
