@@ -888,7 +888,7 @@ async def ticket_menu_slash(
 
         # Second embed with the ticket menu
         second_embed = nextcord.Embed(
-            description="<:CD_info:1310234839982674014> Kindly select the category that best aligns with your request from the dropdown menu.\n\nAfter opening a ticket, follow the provided instructions to ensure a faster response.\n\n ```Note: Please choose the right category to get the faster and smoother response.```\n -# Please read our Order TOS and Pricing before opening a order ticket. \n -# For support tickets, please provide as much detail as possible to help us assist you effectively.\n -# For management tickets, please be respectful and provide clear information regarding your concern or report.\n\n<:CD_warning:1310207127744411936> **Important:** Avoid creating multiple tickets for the same issue, as this can lead to confusion and delays in our response time.",
+            description="<:CD_info:1310234839982674014> Kindly select the category that best aligns with your request from the dropdown menu.\n\nAfter opening a ticket, follow the provided instructions to ensure a faster response.\n\n ```Note: Please choose the right category to get the faster and smoother response.```\n-# Please read our Order TOS and Pricing before opening a order ticket.",
             color=0xff913a
         )
         second_embed.add_field(name="<:CD_dot:1310207495691567145> Support", value="<:CD_BP_O:1376241176990187571> Questions\n<:CD_BP_O:1376241176990187571> Concerns", inline=True)
