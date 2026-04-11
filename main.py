@@ -1,6 +1,6 @@
 import os
 
-token = os.environ.get("TOKEN")
+TOKEN = os.environ.get("TOKEN")
 
 import nextcord
 from nextcord.ext import commands
