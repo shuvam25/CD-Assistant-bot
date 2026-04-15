@@ -206,6 +206,7 @@ async def order_log(
     designer: nextcord.Member = SlashOption(description="Designer to log", required=True),
     original_price: float = SlashOption(description="Price without tax", required=True),
     total_price: float = SlashOption(description="Price including tax", required=True),
+    Panel_name: str = SlashOption(description="Panel Name", required=True),
     ticket_id: str = SlashOption(description="Ticket ID", required=True),
     note: str = SlashOption(description="Additional notes", required=False, default="No additional notes provided.")
 ):
@@ -229,6 +230,7 @@ async def order_log(
         embed.add_field(name="<:CD_Discord:1310206398717755532> Designer", value=designer.mention, inline=False)
         embed.add_field(name="<:CD_robux:1310207300522213507> Original Price", value=f"${original_price:.2f}", inline=True)
         embed.add_field(name="<:CD_robux:1310207300522213507> Total Price", value=f"${total_price:.2f}", inline=True)
+        embed.add_field(name="<:CD_book:1310235460270035047> Panel Name", value=Panel_name, inline=True)
         embed.add_field(name="<:CD_settings:1310207018161934376> Ticket ID", value=ticket_id, inline=True)
         embed.add_field(name="<:CD_dot:1310207495691567145>Note", value=note, inline=False)
         embed.set_footer(text=f"Logged by {interaction.user}", icon_url=interaction.user.avatar.url)
@@ -271,6 +273,7 @@ async def support_log(
     support_staff: nextcord.Member = SlashOption(description="Support staff to log", required=True),
     date_of_opening: str = SlashOption(description="Date of opening", required=True),
     date_of_closing: str = SlashOption(description="Date of closing", required=True),
+    Panel_name: str = SlashOption(description="Panel Name", required=True),
     ticket_id: str = SlashOption(description="Ticket ID", required=True),
     note: str = SlashOption(description="Additional notes", required=False, default="N/A")
 ):
@@ -291,6 +294,7 @@ async def support_log(
         embed.add_field(name="<:CD_Discord:1310206398717755532> Support Staff", value=support_staff.mention, inline=False)
         embed.add_field(name="<:CD_time:1310206753379450910> Date of Opening", value=date_of_opening, inline=True)
         embed.add_field(name="<:CD_time:1310206753379450910> Date of Closing", value=date_of_closing, inline=True)
+        embed.add_field(name="<:CD_book:1310235460270035047> Panel Name", value=Panel_name, inline=True)
         embed.add_field(name="<:CD_settings:1310207018161934376> Ticket ID", value=ticket_id, inline=True)
         embed.add_field(name="<:CD_dot:1310207495691567145>Note", value=note, inline=False)
         embed.set_footer(text=f"Logged by {interaction.user}", icon_url=interaction.user.avatar.url)
