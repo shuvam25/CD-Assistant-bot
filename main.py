@@ -1174,5 +1174,20 @@ async def ad(ctx):
     )
     await ctx.send(embed=embed)
 
+@client.command(name="claim")
+async def delay(ctx):
+    if not any(role.name == "Staff Team" for role in ctx.author.roles):
+        await ctx.send("❌ You don't have permission to use this command.")
+        return
+
+    embed = create_embed(
+        title="Ticket Claimed",
+        description="Hello, this ticket now will be handled by {0}.".format(ctx.author.mention),
+        color=0xff913a
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()
+
+
 # Run the bot
 client.run(token)
