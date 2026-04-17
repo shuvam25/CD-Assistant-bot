@@ -79,6 +79,10 @@ STAFF_ID = 123456789012345678  # Replace with the actual role ID
 async def on_ready():
     logging.info('Bot is ready.')
     logging.info('----------------------')
+    guild = client.get_guild(GUILD_ID)
+    channel = nextcord.utils.get(guild.text_channels, id=1110779991626629252)
+    if channel:
+        await channel.send("Hey guys Shuvam just sent another update please use the /career_form command and /ticket_menu command in contact us channel and career channel as it needs to be updated to be able to use them, Bot is online again!\n\n <@&1302761965277544448> | <@&1108029461967945850> ")
 
 @client.event
 async def on_member_join(member):
@@ -1188,6 +1192,22 @@ async def delay(ctx):
     )
     await ctx.send(embed=embed)
     await ctx.message.delete()
+    
+# Command: payment
+@client.command(name="payment")
+async def payment(ctx):
+    embed = nextcord.Embed(
+        title="**PAYMENT METHODS**",
+        description="In order to recieve the products you order,  you need to pay us first and provide us with a proof of payment. We accept payments through the following gamepasses. \n\n-# Please use the payment method stated by the designer and cross check the price with the agreed price in the ticket.",
+        color=0xff913a
+    )
+    embed.add_field(name="<:CD_dot:1310207495691567145> Payment Method 1", value="https://www.roblox.com/catalog/12266194375/Payment-Method-1", inline=False)
+    embed.add_field(name="<:CD_dot:1310207495691567145> Payment Method 2", value="https://www.roblox.com/catalog/12266191292/Payment-Method-2", inline=False)
+    embed.add_field(name="<:CD_dot:1310207495691567145> Payment Method 3", value="https://www.roblox.com/catalog/12257512909/Payment-Method-3", inline=False)
+    embed.add_field(name="<:CD_dot:1310207495691567145> Payment Method 4", value="https://www.roblox.com/catalog/18547346737/Payment-Method-4", inline=False)
+
+
+    await ctx.send(embed=embed)
 
 # CAREER FORUM APPLICATION =============================================================================
 # ==================================================================================================================
