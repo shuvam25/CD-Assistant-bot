@@ -1193,7 +1193,7 @@ async def delay(ctx):
 #===================================================================================================================    
 
 # ===== CONFIG =====
-CAREER_CHANNEL_ID 
+CAREER_CHANNEL_ID = 1309958393292918917
 APPLICATION_CATEGORY = 1100160213333573743
 
 ALLOWED_ROLES = ["DIRECTOR", "EXECUTIVE"]
