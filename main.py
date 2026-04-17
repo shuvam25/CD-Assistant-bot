@@ -437,13 +437,13 @@ async def tax(
 ):
     try:
         # Calculate the total amount including tax
-        total_amount = robux * 1.43
+        total_amount = math.ceil(robux / 0.7)
 
         # Create embed message
         embed = nextcord.Embed(title="<:CD_settings:1310207018161934376> Tax Calculator", color=0xff913a)
         embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1315313835174920192/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=6756f4f7&is=6755a377&hm=97fd75f4b6aab203e05b203c1f5b49df8707a8ac939b6e4f05222898384873f3&=&format=webp&quality=lossless&width=1439&height=100")
         embed.add_field(name="<:CD_robux:1310207300522213507> Robux", value=f"{robux} Robux", inline=False)
-        embed.add_field(name="<:CD_robux:1310207300522213507> Total Amount (including 43% tax)", value=f"{total_amount:.2f} Robux", inline=False)
+        embed.add_field(name="<:CD_robux:1310207300522213507> Total Amount (including 30% tax)", value=f"{total_amount:.2f} Robux", inline=False)
 
         # Send hidden embed message
         await interaction.response.send_message(embed=embed, ephemeral=True)
