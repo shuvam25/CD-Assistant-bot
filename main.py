@@ -1347,7 +1347,7 @@ class CareerView(View):
 
 
 # ===== SLASH COMMAND =====
-@client.slash_command(name="career_form", description="Send career application panel")
+@client.slash_command(name="career_form", guild_ids=[GUILD_ID], description="Send career application panel")
 async def career_form(interaction: Interaction):
     EXECUTIVE
     DIRECTOR
