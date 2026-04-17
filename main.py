@@ -1192,6 +1192,213 @@ async def delay(ctx):
 # ==================================================================================================================
 #===================================================================================================================    
 
+# ===== CONFIG =====
+CAREER_CHANNEL_ID = 1309958393292918917
+APPLICATION_CATEGORY = 1100160213333573743
+
+ALLOWED_ROLES = ["DIRECTOR", "EXECUTIVE"]
+
+# ===== CLOSE BUTTON VIEW =====
+# ===== CLOSE BUTTON VIEW =====
+class TicketCloseView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @nextcord.ui.button(label="Close", style=nextcord.ButtonStyle.gray)
+    async def close_button(self, button: Button, interaction: Interaction):
+        allowed_roles = [EXECUTIVE, DIRECTOR, MANAGEMENT]
+
+        # Permission check
+        if not any(role.id in allowed_roles for role in interaction.user.roles):
+            await interaction.response.send_message(
+                "You don't have permission to close this ticket.",
+                ephemeral=True
+            )
+            return
+
+        # 🔥 STEP 1: Respond immediately (prevents timeout)
+        await interaction.response.defer(ephemeral=True)
+
+        # Get ticket creator
+        channel_name = interaction.channel.name
+        username = channel_name.replace("_application", "")
+
+        user = None
+        for member in interaction.guild.members:
+            if member.name.lower().replace(" ", "-") == username:
+                user = member
+                break
+
+        # Try DM
+        if user:
+            try:
+                await user.send(
+                    f"Your application ticket **{interaction.channel.name}** has been closed by {interaction.user.mention}."
+                )
+            except:
+                pass
+
+        # 🔥 STEP 2: Send follow-up (NOT response)
+        await interaction.followup.send("Closing ticket...", ephemeral=True)
+
+        # Optional small delay (ensures message is sent before delete)
+        await asyncio.sleep(1)
+
+        await interaction.channel.delete()
+
+# ===== MODAL =====
+class CareerApplicationModal(Modal):
+    def __init__(self):
+        super().__init__("Career Application Form")
+
+        self.discord_username = TextInput(
+            label="Discord Username",
+            placeholder="Enter your Discord username",
+            required=True,
+            max_length=100
+        )
+
+        self.roblox_username = TextInput(
+            label="Roblox Username",
+            placeholder="Enter your Roblox username",
+            required=True
+        )
+
+        self.role_applying = TextInput(
+            label="Role Applying For",
+            placeholder="Enter role",
+            required=True
+        )
+
+        self.experience = TextInput(
+            label="Experience",
+            placeholder="Describe your experience",
+            style=nextcord.TextInputStyle.paragraph,
+            required=True
+        )
+
+
+        self.portfolio = TextInput(
+            label="Portfolio",
+            placeholder="Link or description",
+            required=False
+        )
+
+        self.add_item(self.discord_username)
+        self.add_item(self.roblox_username)
+        self.add_item(self.role_applying)
+        self.add_item(self.experience)
+        self.add_item(self.portfolio)
+
+    async def callback(self, interaction: Interaction):
+        guild = interaction.guild
+
+        category = guild.get_channel(APPLICATION_CATEGORY)
+
+        username_clean = interaction.user.name.replace(" ", "-").lower()
+        channel_name = f"{username_clean}_application"
+
+        overwrites = {
+            guild.default_role: nextcord.PermissionOverwrite(view_channel=False),
+            interaction.user: nextcord.PermissionOverwrite(view_channel=True, send_messages=True)
+        }
+
+        channel = await guild.create_text_channel(
+            name=channel_name,
+            category=category,
+            overwrites=overwrites
+        )
+
+        embed = nextcord.Embed(
+            title="Application",
+            color=0xff913a
+        )
+
+        embed.add_field(name="Discord Username", value=self.discord_username.value, inline=True)
+        embed.add_field(name="Roblox Username", value=self.roblox_username.value, inline=True)
+        embed.add_field(name="Role Applying For", value=self.role_applying.value, inline=True)
+        embed.add_field(name="Experience", value=self.experience.value, inline=False)
+        embed.add_field(name="Portfolio", value=self.portfolio.value or "N/A", inline=False)
+        embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1308444839905595392/Sin_titulo_50_x_8_in_4.png?ex=69e1a077&is=69e04ef7&hm=123f398342a45ac4a1d2406136547ccf32de331c9d3f7fe35e22a86385a810f9&=&format=webp&quality=lossless&width=1860&height=224")
+        embed.set_footer(text=f"Applicant ID: {interaction.user.id}")
+
+        msg = await channel.send(
+            f"{interaction.user.mention}",
+            embed=embed,
+            view=TicketCloseView()
+        )
+
+        await msg.pin()
+
+        await interaction.response.send_message(
+            f" Your application has been submitted: {channel.mention}",
+            ephemeral=True
+        )
+
+
+# ===== BUTTON VIEW =====
+class CareerView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @nextcord.ui.button(label="Submit your Application", style=nextcord.ButtonStyle.gray)
+    async def apply_button(self, button: Button, interaction: Interaction):
+        await interaction.response.send_modal(CareerApplicationModal())
+
+
+# ===== SLASH COMMAND =====
+@client.slash_command(name="career_form", description="Send career application panel")
+async def career_form(interaction: Interaction):
+    EXECUTIVE
+    DIRECTOR
+    CAREER_CHANNEL_ID
+
+    if not any(role.id == EXECUTIVE or role.id == DIRECTOR for role in interaction.user.roles):
+        await interaction.response.send_message(
+            "You don't have permission to use this command.",
+            ephemeral=True
+        )
+        return
+
+    channel = client.get_channel(CAREER_CHANNEL_ID)
+
+    first_embed = nextcord.Embed(
+        color=0xff913a
+    )
+    first_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1494350156739510392/APPLICATION.png?ex=69e24989&is=69e0f809&hm=56f2cb778e43915470484db280229716f28de288471ad10df0d0b1f022526f58&=&format=webp&quality=lossless&width=1860&height=465")
+    second_embed = nextcord.Embed(
+        description="<:CD_info:1310234839982674014> If you are interested in joining our team, please click the button below to fill out the application form. We look forward to reviewing your application and potentially welcoming you to our team!\n\n ``` Career Options ```\n \n",
+        color=0xff913a
+    )
+    
+    second_embed.add_field(name="<:CD_dot:1310207495691567145> Director of Public Relations", value="Handles community relations, feedback, and resolves concerns.", inline=False)
+
+    second_embed.add_field(name="<:CD_dot:1310207495691567145> Director of Human Resources", value="Manages staffing, resolves conflicts, and maintains work standards.", inline=False)
+
+    second_embed.add_field(name="<:CD_dot:1310207495691567145> Marketing Affairs Manager", value="Focuses on marketing strategies and growth opportunities.", inline=False)
+
+    second_embed.add_field(name="<:CD_dot:1310207495691567145> HR Manager", value="Handles recruitment, conflict resolution, and HR operations.", inline=False)
+
+    second_embed.add_field(name="<:CD_dot:1310207495691567145> Operations Coordinator", value="Assigns staff to tickets and ensures smooth workflow.", inline=False)
+
+    second_embed.add_field(name="<:CD_dot:1310207495691567145> Recruitment Officer", value="Finds and recruits talented individuals for the team.", inline=False)
+
+    second_embed.add_field(name="<:CD_dot:1310207495691567145> Support Team", value="Responsible for addressing questions and concerns raised by community members, handling support tickets, and providing assistance with orders.", inline=False)
+
+    second_embed.add_field(name="<:CD_dot:1310207495691567145> Creative Team", value="This team consists of designers & developers who are responsible for handling orders and creating assets for Comet Designs.", inline=False) 
+    second_embed.add_field(
+    name="Categories for Creative Team",
+    value="<:CD_BP_O:1376241176990187571> Clothing Designer\n<:CD_BP_O:1376241176990187571> Livery Designer\n<:CD_BP_O:1376241176990187571> Logo Designer\n<:CD_BP_O:1376241176990187571> Banner Designer\n<:CD_BP_O:1376241176990187571> GFX Designer\n<:CD_BP_O:1376241176990187571> 3D Modeller\n<:CD_BP_O:1376241176990187571> Discord Bot Developer\n<:CD_BP_O:1376241176990187571> Discord Webhook & Layout Developer",
+    inline=False)
+    second_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1308444839905595392/Sin_titulo_50_x_8_in_4.png?ex=69e24937&is=69e0f7b7&hm=53594e1461f7112a57ca6805dc1da1bc32fd2c4404aa067341efb617d03cf1e4&=&format=webp&quality=lossless&width=1860&height=224")
+    await channel.send(embed=first_embed)
+    await channel.send(embed=second_embed, view=CareerView())
+
+    await interaction.response.send_message(
+        " Career form panel sent successfully.",
+        ephemeral=True
+    )
+
 
 
 
