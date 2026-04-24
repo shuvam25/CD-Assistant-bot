@@ -1422,6 +1422,274 @@ async def career_form(interaction: Interaction):
 
 # ======================================================================================================
 
+#========================================================================================================
+# COURSE FIRST TIME LOGGING =============================================================================
+# ==================================================================================================================
+
+# Allowed roles (ONLY these can use command)
+ALLOWED_ROLE_IDS = [1302761965277544448, 1108029461967945850]
+
+# Channel IDs
+COURSE_CHANNELS = {
+    "Clothing Course": 1224486046520180767,
+    "Livery Course": 1224486122348875826,
+    "Graphics Course": 1224486193174020196
+}
+
+# Role pings
+PING_ROLES = "<@&1302761965277544448> <@&1108029461967945850>"
+
+# Course roles (for message)
+COURSE_ROLES = {
+    "Clothing Course": "<@&1495098809674502285>",
+    "Graphics Course": "<@&1495098819837427883>",
+    "Livery Course": "<@&1495098815244406794>"
+}
+
+IMAGE_URL = "https://media.discordapp.net/attachments/1307830607262384128/1315313835174920192/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png"
+
+# --------------------------------------- #
+
+
+
+ALLOWED_ROLE_IDS = [1302761965277544448, 1108029461967945850]
+
+COURSE_CHANNELS = {
+    "Clothing Course": 1224486046520180767,
+    "Livery Course": 1224486122348875826,
+    "Graphics Course": 1224486193174020196
+}
+
+PING_ROLES = "<@&1302761965277544448> <@&1108029461967945850>"
+
+COURSE_ROLES = {
+    "Clothing Course": "<@&1495098809674502285>",
+    "Graphics Course": "<@&1495098819837427883>",
+    "Livery Course": "<@&1495098815244406794>"
+}
+
+IMAGE_URL = "https://media.discordapp.net/attachments/1307830607262384128/1315313835174920192/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png"
+
+# --------------------------------------- #
+
+
+
+@client.slash_command(
+    name="course_first_time",
+    description="Log a first time course purchase",
+    guild_ids=[GUILD_ID]
+)
+async def course_first_time(
+    interaction: Interaction,
+    discord_username: nextcord.Member = SlashOption(description="Discord Username"),
+    roblox_username: str = SlashOption(description="Roblox Username"),
+    email: str = SlashOption(description="Email ID"),
+    course_type: str = SlashOption(
+        description="Select Course Type",
+        choices=["Clothing Course", "Livery Course", "Graphics Course"]
+    )
+):
+
+    # ---------------- ROLE CHECK ---------------- #
+    if interaction.guild is None:
+        await interaction.response.send_message(
+            "This command can only be used in a server.",
+            ephemeral=True
+        )
+        return
+
+    member = interaction.guild.get_member(interaction.user.id)
+
+    if member is None:
+        await interaction.response.send_message(
+            "Could not verify your roles.",
+            ephemeral=True
+        )
+        return
+
+    user_roles = [role.id for role in member.roles]
+
+    if not any(role_id in user_roles for role_id in ALLOWED_ROLE_IDS):
+        await interaction.response.send_message(
+            "You are not authorized to use this command.",
+            ephemeral=True
+        )
+        return
+    # ------------------------------------------------ #
+
+    # Dates
+    date_of_logging = datetime.now()
+    expiry_date = date_of_logging + timedelta(days=30)
+
+    logging_str = date_of_logging.strftime("%d %b %Y")
+    expiry_str = expiry_date.strftime("%d %b %Y")
+
+    # Embed
+    embed = nextcord.Embed(
+        title="First Time Purchase",
+        color=0xff913a
+    )
+
+    # ✅ FIX: convert Member → string properly
+    embed.add_field(
+        name="Discord Username",
+        value=f"{discord_username} ({discord_username.id})",
+        inline=False
+    )
+
+    embed.add_field(name="Roblox Username", value=str(roblox_username), inline=False)
+    embed.add_field(name="Email ID", value=str(email), inline=False)
+    embed.add_field(name="Date of Logging", value=logging_str, inline=True)
+    embed.add_field(name="Expiry Date", value=expiry_str, inline=True)
+    embed.add_field(name="Course Type", value=course_type, inline=False)
+
+    embed.set_image(url=IMAGE_URL)
+    embed.set_footer(
+        text=f"Logged by {interaction.user}",
+        icon_url=interaction.user.display_avatar.url
+    )
+
+    # Send to correct channel
+    channel_id = COURSE_CHANNELS[course_type]
+
+    try:
+        channel = client.get_channel(channel_id) or await client.fetch_channel(channel_id)
+
+        await channel.send(
+            content=PING_ROLES,
+            embed=embed
+        )
+
+    except Exception as e:
+        print(f"[ERROR] Error sending message: {e}")  # ✅ FIX (no emoji)
+
+    # Ephemeral message
+    await interaction.response.send_message(
+        f"Logged successfully!\n\n"
+        f"Please now use `/role temp` using Auto Role Bot to grant access for 30 days Also update the [Site Access Sheet](https://docs.google.com/spreadsheets/d/1Xwxzmbguzx33u__vUnniEuAqyOMm_-_zyhl9dOAoodk/edit?usp=sharing).\n\n"
+        f"{COURSE_ROLES[course_type]}",
+        ephemeral=True
+    )
+
+
+#========================================================================================================
+# COURSE RENEWAL LOGGING =============================================================================
+# ==================================================================================================================
+
+
+
+COURSE_CHANNELSR = {
+    "Clothing Course renewal": 1495097450359427252,
+    "Livery Course renewal": 1495097614155382936,
+    "Graphics Course renewal": 1224486303672827914
+}
+
+COURSE_ROLESR = {
+    "Clothing Course renewal": "<@&1495098809674502285>",
+    "Graphics Course renewal": "<@&1495098819837427883>",
+    "Livery Course renewal": "<@&1495098815244406794>"
+}
+PING_ROLES = "<@&1302761965277544448> <@&1108029461967945850>"
+
+
+IMAGE_URLR = "https://media.discordapp.net/attachments/1307830607262384128/1315313835174920192/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png"
+
+@client.slash_command(
+    name="course_renewal_log",
+    description="Log a course renewal",
+    guild_ids=[GUILD_ID]
+)
+async def course_renewal_log(
+    interaction: Interaction,
+    discord_username: nextcord.Member = SlashOption(description="Discord Username"),
+    roblox_username: str = SlashOption(description="Roblox Username"),
+    email: str = SlashOption(description="Email ID"),
+    course_type: str = SlashOption(
+        description="Select Course Type",
+        choices=["Clothing Course renewal", "Livery Course renewal", "Graphics Course renewal"]
+    )
+):
+
+    # ---------------- ROLE CHECK ---------------- #
+    if interaction.guild is None:
+        await interaction.response.send_message(
+            "This command can only be used in a server.",
+            ephemeral=True
+        )
+        return
+
+    member = interaction.guild.get_member(interaction.user.id)
+
+    if member is None:
+        await interaction.response.send_message(
+            "Could not verify your roles.",
+            ephemeral=True
+        )
+        return
+
+    user_roles = [role.id for role in member.roles]
+
+    if not any(role_id in user_roles for role_id in ALLOWED_ROLE_IDS):
+        await interaction.response.send_message(
+            "You are not authorized to use this command.",
+            ephemeral=True
+        )
+        return
+    # ------------------------------------------------ #
+
+    # Dates
+    date_of_logging = datetime.now()
+    expiry_date = date_of_logging + timedelta(days=30)
+
+    logging_str = date_of_logging.strftime("%d %b %Y")
+    expiry_str = expiry_date.strftime("%d %b %Y")
+
+    # Embed
+    embed = nextcord.Embed(
+        title="Course Renewal Log",
+        color=0xff913a
+    )
+
+    # ✅ FIX: convert Member → string properly
+    embed.add_field(
+        name="Discord Username",
+        value=f"{discord_username} ({discord_username.id})",
+        inline=False
+    )
+
+    embed.add_field(name="Roblox Username", value=str(roblox_username), inline=False)
+    embed.add_field(name="Email ID", value=str(email), inline=False)
+    embed.add_field(name="Date of Logging", value=logging_str, inline=True)
+    embed.add_field(name="Expiry Date", value=expiry_str, inline=True)
+    embed.add_field(name="Course Type", value=course_type, inline=False)
+
+    embed.set_image(url=IMAGE_URL)
+    embed.set_footer(
+        text=f"Logged by {interaction.user}",
+        icon_url=interaction.user.display_avatar.url
+    )
+
+    # Send to correct channel
+    channel_id = COURSE_CHANNELSR[course_type]
+
+    try:
+        channel = client.get_channel(channel_id) or await client.fetch_channel(channel_id)
+
+        await channel.send(
+            content=PING_ROLES,
+            embed=embed
+        )
+
+    except Exception as e:
+        print(f"[ERROR] Error sending message: {e}")  # ✅ FIX (no emoji)
+
+    # Ephemeral message
+    await interaction.response.send_message(
+        f"Logged successfully!\n\n"
+        f"Please now use `/role temp` using Auto Role Bot to grant access for 30 days Also update the [Site Access Sheet](https://docs.google.com/spreadsheets/d/1Xwxzmbguzx33u__vUnniEuAqyOMm_-_zyhl9dOAoodk/edit?usp=sharing).\n\n"
+        f"{COURSE_ROLESR[course_type]}",
+        ephemeral=True
+    )
 
 
 
