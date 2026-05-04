@@ -186,7 +186,7 @@ async def review(
     try:
         embed = nextcord.Embed(title="**<:CD_partner:1310207556903501844> Review**", color=0xff913a)
         embed.set_author(name=f"Review from {interaction.user}", icon_url=interaction.user.avatar.url)
-        embed.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1312520876239097876/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=674ccbd2&is=674b7a52&hm=f6228f89e71982bdbcd236455249a0f0fba8796855434204803f0d108e8c7157&=&format=webp&quality=lossless&width=1439&height=100")
+        embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818157882052698/Footer_banner.png?ex=69f9d154&is=69f87fd4&hm=88ed0d5062d1e972647b5835692fefcca61ef43ef825fb3fa503b47cf69e42be&=&format=webp&quality=lossless&width=1859&height=129")
         embed.add_field(name="**<:CD_dot:1310207495691567145>Designer:**", value=designer.mention, inline=True)
         embed.add_field(name="**<:CD_dot:1310207495691567145>Product:**", value=product, inline=True)
         embed.add_field(name="**<:CD_dot:1310207495691567145>Rating:**", value="".join(["<:CD_Star:1337489151154454529>"] * rating), inline=True)
@@ -231,7 +231,7 @@ async def order_log(
             return
 
         embed = nextcord.Embed(title="<:CD_cart:1322299968450461737> Order Log", color=0xff913a)
-        embed.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1312520876239097876/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=674ccbd2&is=674b7a52&hm=f6228f89e71982bdbcd236455249a0f0fba8796855434204803f0d108e8c7157&=&format=webp&quality=lossless&width=1439&height=100")
+        embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818157882052698/Footer_banner.png?ex=69f9d154&is=69f87fd4&hm=88ed0d5062d1e972647b5835692fefcca61ef43ef825fb3fa503b47cf69e42be&=&format=webp&quality=lossless&width=1859&height=129")
         embed.add_field(name="<:CD_Discord:1310206398717755532> Designer", value=designer.mention, inline=False)
         embed.add_field(name="<:CD_robux:1310207300522213507> Original Price", value=f"${original_price:.2f}", inline=True)
         embed.add_field(name="<:CD_robux:1310207300522213507> Total Price", value=f"${total_price:.2f}", inline=True)
@@ -295,7 +295,7 @@ async def support_log(
 
         # Create the embed
         embed = nextcord.Embed(title="<:CD_Info:1310206627466711140> Support Log", color=0xff913a)
-        embed.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1312520876239097876/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=674ccbd2&is=674b7a52&hm=f6228f89e71982bdbcd236455249a0f0fba8796855434204803f0d108e8c7157&=&format=webp&quality=lossless&width=1439&height=100")
+        embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818157882052698/Footer_banner.png?ex=69f9d154&is=69f87fd4&hm=88ed0d5062d1e972647b5835692fefcca61ef43ef825fb3fa503b47cf69e42be&=&format=webp&quality=lossless&width=1859&height=129")
         embed.add_field(name="<:CD_Discord:1310206398717755532> Support Staff", value=support_staff.mention, inline=False)
         embed.add_field(name="<:CD_time:1310206753379450910> Date of Opening", value=date_of_opening, inline=True)
         embed.add_field(name="<:CD_time:1310206753379450910> Date of Closing", value=date_of_closing, inline=True)
@@ -384,78 +384,94 @@ async def infract(
 @client.slash_command(guild_ids=[GUILD_ID], description="Create an outlet post")
 async def outlet(
     interaction: Interaction,
-    thread: nextcord.Thread = SlashOption(description="Thread to send the message", required=True),
-    product_images: str = SlashOption(description="Comma-separated URLs of the product images", required=True),
-    type_of_product: str = SlashOption(description="Type of product", required=True),
+    product_images: Attachment = SlashOption(description="Preview of the product", required=True),
     product_name: str = SlashOption(description="Name of the product", required=True),
     description: str = SlashOption(description="Description of the product", required=True),
-    price: str = SlashOption(description="Price of the product", required=True),
-    enable_button1: bool = SlashOption(description="Enable Purchasing Hub button", required=True, choices=[True, False]),
-    enable_button2: bool = SlashOption(description="Enable Packables button", required=True, choices=[True, False]),
-    enable_button3: bool = SlashOption(description="Enable Website button", required=True, choices=[True, False])
+    price_robux: str = SlashOption(description="Price in Robux", required=True),
+    price_pounds: str = SlashOption(description="Price in Pounds", required=True),
+    payhip_url: str = SlashOption(description="Payhip Store URL", required=True)
 ):
     try:
-        # Role ID check
+        # ✅ Role check
         allowed_role_ids = {1302761965277544448, 1108029461967945850}
         user_role_ids = {role.id for role in interaction.user.roles}
         if not allowed_role_ids.intersection(user_role_ids):
-            await interaction.response.send_message("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.response.send_message(
+                "You don't have permission to use this command.",
+                ephemeral=True
+            )
             return
 
-        # Parse image URLs
-        image_urls = [url.strip() for url in product_images.split(',')]
+        # ✅ Image URL
+        image_url = product_images.url
 
-        # Embed for each image
-        embeds = [nextcord.Embed(color=0xff913a).set_image(url=url) for url in image_urls]
+        # ✅ Get forum channel
+        outlet_channel = interaction.guild.get_channel(1500777337850167346)
+        if not outlet_channel:
+            await interaction.response.send_message(
+                "Outlet channel not found.",
+                ephemeral=True
+            )
+            return
 
-        # Add final embed with product info
-        embed_details = nextcord.Embed(
-            title=f"<:CD_cart:1310206827946049546> {product_name}",
+        # 🧵 Create thread with ONLY preview image
+        thread = await outlet_channel.create_thread(
+            name=product_name,
+            content=image_url,  # 👈 preview image as main post
+            auto_archive_duration=1440
+        )
+
+        # 📦 Embed (inside thread)
+        embed = nextcord.Embed(
+            title=f"{product_name}",
             description=f"<:CD_Info:1310206627466711140> {description}",
             color=0xff913a
         )
-        embed_details.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1312520876239097876/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=674ccbd2&is=674b7a52&hm=f6228f89e71982bdbcd236455249a0f0fba8796855434204803f0d108e8c7157&=&format=webp&quality=lossless&width=1439&height=100")
-        embed_details.add_field(name="Price", value=f"<:CD_robux:1310207300522213507> {price}", inline=False)
-        embed_details.set_footer(text=f"{type_of_product}")
-        embeds.append(embed_details)
 
-        # Create button view
+        embed.add_field(
+            name="Price",
+            value=f"<:CD_robux:1310207300522213507> {price_robux}\n<:PayPal:1495154342695801073> {price_pounds}",
+            inline=False
+        )
+
+        # Footer banner
+        embed.set_image(
+            url="https://media.discordapp.net/attachments/1307830607262384128/1500818157882052698/Footer_banner.png?ex=69f9d154&is=69f87fd4&hm=88ed0d5062d1e972647b5835692fefcca61ef43ef825fb3fa503b47cf69e42be&=&format=webp&quality=lossless&width=1859&height=129"
+        )
+
+        # 🔘 Buttons
         view = View()
-        view.add_item(Button(label="Purchasing Hub", url="https://www.roblox.com/games/83015037950675/Comet-Designs-Purchasing-Hub", disabled=not enable_button1))
-        view.add_item(Button(label="Packables", url="https://packables.store/652a9f90c7a0a2091d0a906e", disabled=not enable_button2))
-        view.add_item(Button(label="Website", url="https://cometdesigns.co.uk/collection/home-page", disabled=not enable_button3))
+        view.add_item(Button(
+            label="Roblox Store",
+            url="https://www.roblox.com/games/83015037950675/Comet-Designs-Outlet",
+            style=ButtonStyle.gray
+        ))
+        view.add_item(Button(
+            label="Payhip Store",
+            url=payhip_url,
+            style=ButtonStyle.gray
+        ))
 
-        # Post to thread
-        await thread.send(embeds=embeds, view=view)
-        await interaction.response.send_message("✅ Outlet post created successfully!", ephemeral=True)
+        # ✅ Send embed INSIDE thread
+        await thread.send(
+            content="\u200b",  # prevents empty message error
+            embed=embed,
+            view=view
+        )
+
+        # ✅ Confirmation
+        await interaction.response.send_message(
+            "✅ Outlet post created successfully!",
+            ephemeral=True
+        )
 
     except Exception as e:
         logging.error(f"Error in outlet command: {e}")
-        await interaction.response.send_message("❌ An error occurred while creating the outlet post.", ephemeral=True)
-
-
-# TAX CALCULATOR SLASH COMMAND --------------------------------------------------------------------------------
-@client.slash_command(guild_ids=[GUILD_ID], description="Calculate the total amount including tax")
-async def tax(
-    interaction: Interaction,
-    robux: float = SlashOption(description="Enter the amount of Robux", required=True)
-):
-    try:
-        # Calculate the total amount including tax
-        total_amount = math.ceil(robux / 0.7)
-
-        # Create embed message
-        embed = nextcord.Embed(title="<:CD_settings:1310207018161934376> Tax Calculator", color=0xff913a)
-        embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1315313835174920192/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=6756f4f7&is=6755a377&hm=97fd75f4b6aab203e05b203c1f5b49df8707a8ac939b6e4f05222898384873f3&=&format=webp&quality=lossless&width=1439&height=100")
-        embed.add_field(name="<:CD_robux:1310207300522213507> Robux", value=f"{robux} Robux", inline=False)
-        embed.add_field(name="<:CD_robux:1310207300522213507> Total Amount (including 30% tax)", value=f"{total_amount:.2f} Robux", inline=False)
-
-        # Send hidden embed message
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-    except Exception as e:
-        logging.error(f"Error in tax command: {e}")
-        await interaction.response.send_message("An error occurred while calculating the tax.", ephemeral=True)
-
+        await interaction.response.send_message(
+            "❌ An error occurred while creating the outlet post.",
+            ephemeral=True
+        )
+        
 # =================================================
 # =================================================
 
@@ -593,7 +609,7 @@ async def promotion(
         await username.add_roles(new_rank)
 
         embed = nextcord.Embed(title="<:CD_Light:1310205970596499487> Promotion", color=0xff913a)
-        embed.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1312520876239097876/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=674ccbd2&is=674b7a52&hm=f6228f89e71982bdbcd236455249a0f0fba8796855434204803f0d108e8c7157&=&format=webp&quality=lossless&width=1439&height=100")
+        embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818157882052698/Footer_banner.png?ex=69f9d154&is=69f87fd4&hm=88ed0d5062d1e972647b5835692fefcca61ef43ef825fb3fa503b47cf69e42be&=&format=webp&quality=lossless&width=1859&height=129")
         embed.add_field(name="<:CD_dot:1310207495691567145>Username", value=username.mention, inline=True)
         embed.add_field(name="<:CD_dot:1310207495691567145>New Rank", value=new_rank.mention, inline=True)
         embed.add_field(name="<:CD_dot:1310207495691567145>Reason", value=reason, inline=False)
@@ -893,7 +909,7 @@ async def ticket_menu_slash(
         first_embed = nextcord.Embed(
             color=0xff913a
         )
-        first_embed.set_image(url="https://media.discordapp.net/attachments/1110779991626629252/1492219938432094278/CONTACT_US.png?ex=69da899d&is=69d9381d&hm=3afc97a4a1dd2e2947a9a1bde1d38b0aa4facc565b5ef348325b5530136cccd8&=&format=webp&quality=lossless&width=1860&height=465")
+        first_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818125569003551/CONTACT_US.png?ex=69f9d14c&is=69f87fcc&hm=a721316a943d2fb2c6e27b528b449c809beed8b37f00f09c851f405eb2c705f4&=&format=webp&quality=lossless&width=1859&height=486")
 
         # Second embed with the ticket menu
         second_embed = nextcord.Embed(
@@ -903,7 +919,7 @@ async def ticket_menu_slash(
         second_embed.add_field(name="<:CD_dot:1310207495691567145> Support", value="<:CD_BP_O:1376241176990187571> Questions\n<:CD_BP_O:1376241176990187571> Concerns", inline=True)
         second_embed.add_field(name="<:CD_dot:1310207495691567145> Order", value="<:CD_BP_O:1376241176990187571> Livery\n<:CD_BP_O:1376241176990187571> Clothing\n<:CD_BP_O:1376241176990187571> Graphics\n<:CD_BP_O:1376241176990187571> Discord Utilities\n<:CD_BP_O:1376241176990187571> Development Assets", inline=True)
         second_embed.add_field(name="<:CD_dot:1310207495691567145> Management", value="<:CD_BP_O:1376241176990187571> Reports & Appeals\n<:CD_BP_O:1376241176990187571> Collaboration\n<:CD_BP_O:1376241176990187571> Concerns", inline=True)
-        second_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1315313835174920192/Sin_titulo_72_x_9_in_72_x_5_in_1_1.png?ex=69dba277&is=69da50f7&hm=b90e78bc4c5f965037cb4f178228a1b93c069b8dc6af421e749a0cf28990a0d7&=&format=webp&quality=lossless&width=1730&height=120")
+        second_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818157882052698/Footer_banner.png?ex=69f9d154&is=69f87fd4&hm=88ed0d5062d1e972647b5835692fefcca61ef43ef825fb3fa503b47cf69e42be&=&format=webp&quality=lossless&width=1859&height=129")
 
         # Parse disabled options
         disable_list = [opt.strip().lower() for opt in disable.split(",")] if disable else []
@@ -1174,7 +1190,7 @@ async def nodesigner(ctx):
 async def ad(ctx):
     embed = nextcord.Embed(
         title="**COMET DESIGNS AD**",
-        description="```# **COMET DESIGNS**\n ***__Your Ideas, Launched Into Orbit__***\n\n``About us``\n<:CD_dot:1310207495691567145> We are a premier design server specializing in creating ERLC roleplay server assets. Our passion is to bring creativity and functionality together for your roleplay experience.\n\n``Services``\n<:CD_dot:1310207495691567145> Liveries designs    |    Clothing designs\n<:CD_dot:1310207495691567145> Graphics designs    |    Discord services\n\n``Explore more``\n<:CD_dot:1310207495691567145> [Discord](https://discord.gg/cYVDd5b5rn)\n<:CD_dot:1310207495691567145> [Store](https://packables.store/652a9f90c7a0a2091d0a906e)\n<:CD_dot:1310207495691567145> [Roblox](https://www.roblox.com/communities/16394588/Official-Comet-Designs#!/about)```",
+        description="```# **COMET DESIGNS**\n ***__Your Ideas, Launched Into Orbit__***\n\n``About us``\n- We are a design server specializing in creating ERLC roleplay server assets. Our passion is to bring creativity and functionality together for your roleplay experience. We have also introduced courses and are now actively hiring staff.\n\n``Services``\n- Liveries designs    |    Clothing designs\n- Graphics designs    |    Discord services\n\n``Explore more``\n- [Discord](https://discord.gg/cYVDd5b5rn)\n- [Roblox](https://www.roblox.com/communities/16394588/Official-Comet-Designs#!/about)\n\nhttps://media.discordapp.net/attachments/1142557690460131530/1331528197468192778/CD_Past_Work.png```",
         color=0xff913a
     )
     await ctx.send(embed=embed)
@@ -1340,7 +1356,7 @@ class CareerApplicationModal(Modal):
         embed.add_field(name="Role Applying For", value=self.role_applying.value, inline=True)
         embed.add_field(name="Experience", value=self.experience.value, inline=False)
         embed.add_field(name="Portfolio", value=self.portfolio.value or "N/A", inline=False)
-        embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1308444839905595392/Sin_titulo_50_x_8_in_4.png?ex=69e1a077&is=69e04ef7&hm=123f398342a45ac4a1d2406136547ccf32de331c9d3f7fe35e22a86385a810f9&=&format=webp&quality=lossless&width=1860&height=224")
+        embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818157882052698/Footer_banner.png?ex=69f9d154&is=69f87fd4&hm=88ed0d5062d1e972647b5835692fefcca61ef43ef825fb3fa503b47cf69e42be&=&format=webp&quality=lossless&width=1859&height=129")
         embed.set_footer(text=f"Applicant ID: {interaction.user.id}")
 
         msg = await channel.send(
@@ -1386,7 +1402,7 @@ async def career_form(interaction: Interaction):
     first_embed = nextcord.Embed(
         color=0xff913a
     )
-    first_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1494350156739510392/APPLICATION.png?ex=69e24989&is=69e0f809&hm=56f2cb778e43915470484db280229716f28de288471ad10df0d0b1f022526f58&=&format=webp&quality=lossless&width=1860&height=465")
+    first_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818073190662264/CAREER.png?ex=69f9d140&is=69f87fc0&hm=4015f5788eae27e01d2a76c28b20fb09edd3963d71a0dc9417637f44946f4077&=&format=webp&quality=lossless&width=1859&height=486")
     second_embed = nextcord.Embed(
         description="<:CD_info:1310234839982674014> If you are interested in joining our team, please click the button below to fill out the application form. We look forward to reviewing your application and potentially welcoming you to our team!\n\n ``` Career Options ```\n \n",
         color=0xff913a
@@ -1691,6 +1707,49 @@ async def course_renewal_log(
         ephemeral=True
     )
 
+# PORTFOLIO THREAD CREATION =============================================================================
+# ==================================================================================================================
+
+@client.slash_command(guild_ids=[GUILD_ID], description="Create a designer portfolio thread")
+async def portfolio(
+    interaction: Interaction,
+    designer: Member = SlashOption(description="Select the designer", required=True)
+):
+    try:
+        # ✅ Portfolio forum channel
+        portfolio_channel = interaction.guild.get_channel(1309908543545151518)
+        if not portfolio_channel:
+            await interaction.response.send_message(
+                "Portfolio channel not found.",
+                ephemeral=True
+            )
+            return
+
+        # 🖼️ YOUR PORTFOLIO PREVIEW IMAGE
+        preview_image = "https://media.discordapp.net/attachments/1307830607262384128/1500837849224970312/PORTFOLIO.png?ex=69f9e3ab&is=69f8922b&hm=9bfb573ecbe3b97c1ab12683ac9239098f1db1f8f96cd76705509ec012835ef8&=&format=webp&quality=lossless&width=1423&height=800"
+
+        # 🧵 Create thread with image as main post
+        thread = await portfolio_channel.create_thread(
+            name=f"{designer.name} Portfolio",
+            content=preview_image,  # 👈 image only (no embed)
+            auto_archive_duration=1440
+        )
+
+        # 👤 Ping designer inside thread
+        await thread.send(designer.mention)
+
+        # ✅ Confirmation
+        await interaction.response.send_message(
+            f"✅ Portfolio created for {designer.mention}!",
+            ephemeral=True
+        )
+
+    except Exception as e:
+        logging.error(f"Error in portfolio command: {e}")
+        await interaction.response.send_message(
+            "❌ An error occurred while creating the portfolio.",
+            ephemeral=True
+        )
 
 
     
