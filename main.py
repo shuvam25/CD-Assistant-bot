@@ -1427,7 +1427,7 @@ async def career_form(interaction: Interaction):
     name="Categories for Creative Team",
     value="<:CD_BP_O:1376241176990187571> Clothing Designer\n<:CD_BP_O:1376241176990187571> Livery Designer\n<:CD_BP_O:1376241176990187571> Logo Designer\n<:CD_BP_O:1376241176990187571> Banner Designer\n<:CD_BP_O:1376241176990187571> GFX Designer\n<:CD_BP_O:1376241176990187571> 3D Modeller\n<:CD_BP_O:1376241176990187571> Discord Bot Developer\n<:CD_BP_O:1376241176990187571> Discord Webhook & Layout Developer",
     inline=False)
-    second_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1308444839905595392/Sin_titulo_50_x_8_in_4.png?ex=69e24937&is=69e0f7b7&hm=53594e1461f7112a57ca6805dc1da1bc32fd2c4404aa067341efb617d03cf1e4&=&format=webp&quality=lossless&width=1860&height=224")
+    second_embed.set_image(url="https://media.discordapp.net/attachments/1307830607262384128/1500818157882052698/Footer_banner.png?ex=69f9d154&is=69f87fd4&hm=88ed0d5062d1e972647b5835692fefcca61ef43ef825fb3fa503b47cf69e42be&=&format=webp&quality=lossless&width=1859&height=129")
     await channel.send(embed=first_embed)
     await channel.send(embed=second_embed, view=CareerView())
 
