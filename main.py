@@ -1710,12 +1710,24 @@ async def course_renewal_log(
 # PORTFOLIO THREAD CREATION =============================================================================
 # ==================================================================================================================
 
+
 @client.slash_command(guild_ids=[GUILD_ID], description="Create a designer portfolio thread")
 async def portfolio(
     interaction: Interaction,
     designer: Member = SlashOption(description="Select the designer", required=True)
 ):
     try:
+        # ✅ Role check
+        allowed_roles = {EXECUTIVE, DIRECTOR, MANAGEMENT}
+        user_roles = {role.id for role in interaction.user.roles}
+
+        if not allowed_roles.intersection(user_roles):
+            await interaction.response.send_message(
+                "❌ You don't have permission to use this command.",
+                ephemeral=True
+            )
+            return
+
         # ✅ Portfolio forum channel
         portfolio_channel = interaction.guild.get_channel(1309908543545151518)
         if not portfolio_channel:
@@ -1725,13 +1737,13 @@ async def portfolio(
             )
             return
 
-        # 🖼️ YOUR PORTFOLIO PREVIEW IMAGE
+        # 🖼️ Portfolio preview image
         preview_image = "https://media.discordapp.net/attachments/1307830607262384128/1500837849224970312/PORTFOLIO.png?ex=69f9e3ab&is=69f8922b&hm=9bfb573ecbe3b97c1ab12683ac9239098f1db1f8f96cd76705509ec012835ef8&=&format=webp&quality=lossless&width=1423&height=800"
 
-        # 🧵 Create thread with image as main post
+        # 🧵 Create thread with image
         thread = await portfolio_channel.create_thread(
             name=f"{designer.name} Portfolio",
-            content=preview_image,  # 👈 image only (no embed)
+            content=preview_image,
             auto_archive_duration=1440
         )
 
@@ -1750,7 +1762,6 @@ async def portfolio(
             "❌ An error occurred while creating the portfolio.",
             ephemeral=True
         )
-
 
     
 
