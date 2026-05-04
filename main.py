@@ -2,7 +2,11 @@ import os
 
 token = os.environ.get("TOKEN")
 
+from tabnanny import check
+
+from IPython import embed
 import nextcord
+from nextcord import Member, role
 from nextcord.ext import commands
 from nextcord import Interaction, SlashOption, Attachment, ButtonStyle
 from nextcord.utils import get
