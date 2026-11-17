@@ -86,6 +86,7 @@ async def on_ready():
         await channel.send("Hey guys Shuvam just sent another update please use the /career_form command and /ticket_menu command in contact us channel and career channel as it needs to be updated to be able to use them, Bot is online again!\n\n <@&1302761965277544448> | <@&1108029461967945850> ")
 
 @client.event
+'''
 async def on_member_join(member):
     logging.info(f"{member} has joined the server.")  
     guild = member.guild
@@ -175,6 +176,7 @@ def save_linked_accounts():
     with open(LINKED_ACCOUNTS_FILE, 'w') as file:
         json.dump(linked_accounts, file)
 '''
+'''
 # REVIEW SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Submit a review")
 async def review(
@@ -205,7 +207,7 @@ async def review(
         logging.error(f"Error in review command: {e}")
         await interaction.response.send_message("An error occurred while submitting your review.", ephemeral=True)
     '''
-
+'''
 # ORDER LOG SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Use this command to log your order")
 async def order_log(
@@ -473,7 +475,7 @@ async def outlet(
             "❌ An error occurred while creating the outlet post.",
             ephemeral=True
         )
-        
+'''
 # =================================================
 # =================================================
 
@@ -632,7 +634,7 @@ async def promotion(
 # ===========================
 # STAFF MANAGEMENT ==============================================================
 # =========================== ============================================
-
+'''
 STAFF_DATABASE_FILE = 'staff_database.json'
 
 # Ensure the staff database file exists
@@ -850,7 +852,7 @@ async def view_staff(
 
 # Define the channel ID where rank requests will be sent
 RANK_REQUEST_CHANNEL_ID = 1067736199453753394
-
+'''
 # RANK REQUEST SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Submit a rank request")
 async def rank_request(
@@ -886,7 +888,7 @@ async def rank_request(
         await interaction.response.send_message("An error occurred while submitting your rank request.", ephemeral=True)
 
 
-
+'''
 # TICKET SYSTEM USING TICKET TOOLS ==============================
 # Command to send the embed message with dropdown menu
 # Adding a slash command version of the TicketMenu with optional input to enable/disable select options
@@ -1011,7 +1013,7 @@ async def ticket_menu_slash(
     else:
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
 
-
+'''
 ## CUSTOM TICKET RESPONSE ALIASES -------------------------------------------------------------------------------
 
 # Custom ticket response commands
