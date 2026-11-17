@@ -206,7 +206,7 @@ async def review(
         logging.error(f"Error in review command: {e}")
         await interaction.response.send_message("An error occurred while submitting your review.", ephemeral=True)
     '''
-'''
+
 # ORDER LOG SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Use this command to log your order")
 async def order_log(
@@ -474,7 +474,7 @@ async def outlet(
             "❌ An error occurred while creating the outlet post.",
             ephemeral=True
         )
-'''
+
 # =================================================
 # =================================================
 
@@ -633,7 +633,7 @@ async def promotion(
 # ===========================
 # STAFF MANAGEMENT ==============================================================
 # =========================== ============================================
-'''
+
 STAFF_DATABASE_FILE = 'staff_database.json'
 
 # Ensure the staff database file exists
@@ -644,7 +644,7 @@ if not os.path.exists(STAFF_DATABASE_FILE):
 
     
 from datetime import datetime
-
+'''
 # ADD STAFF SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Add a new staff member")
 async def add_staff(
@@ -685,8 +685,8 @@ async def add_staff(
             logging.error(f"Error in add_staff command: {e}")
             await interaction.response.send_message("An error occurred while adding the staff member.", ephemeral=True)
     else:
-        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
-
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True) '''
+'''
 # UPDATE STAFF SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Update a staff member's information")
 async def update_staff(
@@ -723,8 +723,9 @@ async def update_staff(
             logging.error(f"Error in update_staff command: {e}")
             await interaction.response.send_message("An error occurred while updating the staff member.", ephemeral=True)
     else:
-        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True) '''
 
+'''
 # REMOVE STAFF SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Remove a staff member")
 async def remove_staff(
@@ -752,7 +753,7 @@ async def remove_staff(
     else:
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
 # ==========================================================================
-
+'''
 import requests
 import logging
 
@@ -800,6 +801,7 @@ def fetch_group_roles(group_id):
         logging.error(f"Error fetching group roles: {e}")
         return []
 
+'''
 # VIEW STAFF SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="View staff member information")
 async def view_staff(
@@ -848,10 +850,10 @@ async def view_staff(
     except Exception as e:
         logging.error(f"Error in view_staff command: {e}")
         await interaction.response.send_message("An error occurred while viewing the staff members.", ephemeral=False)
-
+'''
 # Define the channel ID where rank requests will be sent
 RANK_REQUEST_CHANNEL_ID = 1067736199453753394
-'''
+
 # RANK REQUEST SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Submit a rank request")
 async def rank_request(
@@ -887,7 +889,7 @@ async def rank_request(
         await interaction.response.send_message("An error occurred while submitting your rank request.", ephemeral=True)
 
 
-'''
+
 # TICKET SYSTEM USING TICKET TOOLS ==============================
 # Command to send the embed message with dropdown menu
 # Adding a slash command version of the TicketMenu with optional input to enable/disable select options
@@ -1012,7 +1014,7 @@ async def ticket_menu_slash(
     else:
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
 
-'''
+
 ## CUSTOM TICKET RESPONSE ALIASES -------------------------------------------------------------------------------
 
 # Custom ticket response commands
