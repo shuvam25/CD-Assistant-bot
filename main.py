@@ -174,7 +174,7 @@ def save_support_logs():
 def save_linked_accounts():
     with open(LINKED_ACCOUNTS_FILE, 'w') as file:
         json.dump(linked_accounts, file)
-
+'''
 # REVIEW SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Submit a review")
 async def review(
@@ -204,6 +204,7 @@ async def review(
     except Exception as e:
         logging.error(f"Error in review command: {e}")
         await interaction.response.send_message("An error occurred while submitting your review.", ephemeral=True)
+    '''
 
 # ORDER LOG SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Use this command to log your order")
