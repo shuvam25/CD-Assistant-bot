@@ -86,7 +86,6 @@ async def on_ready():
         await channel.send("Hey guys Shuvam just sent another update please use the /career_form command and /ticket_menu command in contact us channel and career channel as it needs to be updated to be able to use them, Bot is online again!\n\n <@&1302761965277544448> | <@&1108029461967945850> ")
 
 @client.event
-'''
 async def on_member_join(member):
     logging.info(f"{member} has joined the server.")  
     guild = member.guild
@@ -175,7 +174,7 @@ def save_support_logs():
 def save_linked_accounts():
     with open(LINKED_ACCOUNTS_FILE, 'w') as file:
         json.dump(linked_accounts, file)
-'''
+
 '''
 # REVIEW SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Submit a review")
