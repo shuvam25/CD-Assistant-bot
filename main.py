@@ -206,7 +206,7 @@ async def review(
         logging.error(f"Error in review command: {e}")
         await interaction.response.send_message("An error occurred while submitting your review.", ephemeral=True)
     '''
-
+'''
 # ORDER LOG SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Use this command to log your order")
 async def order_log(
@@ -273,8 +273,9 @@ async def order_log(
     except Exception as e:
         logging.error(f"Error in order_log command: {e}")
         await interaction.response.send_message("❌ An error occurred while logging the order.", ephemeral=True)
-
+'''
 # SUPPORT LOG SLASH COMMAND --------------------------------------------------------------------------------
+'''
 @client.slash_command(guild_ids=[GUILD_ID], description="Use this command to log your support ticket")
 async def support_log(
     interaction: Interaction,
@@ -381,8 +382,8 @@ async def infract(
         logging.error(f"Error in infract command: {e}")
         await interaction.response.send_message("❌ An error occurred while issuing the infraction.", ephemeral=True)
 
-
-
+'''
+'''
 # OUTLET SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Create an outlet post")
 async def outlet(
@@ -474,7 +475,7 @@ async def outlet(
             "❌ An error occurred while creating the outlet post.",
             ephemeral=True
         )
-
+'''
 # =================================================
 # =================================================
 
@@ -546,7 +547,7 @@ async def supporter(
         logging.error(f"Error in supporter command: {e}")
         await interaction.response.send_message("An error occurred while acknowledging the supporter.", ephemeral=True)
 
-
+'''
 # DEMOTION SLASH COMMAND --------------------------------------------------------------------------------
 @client.slash_command(guild_ids=[GUILD_ID], description="Demote a user")
 async def demotion(
@@ -629,7 +630,7 @@ async def promotion(
     except Exception as e:
         logging.error(f"Error in promotion command: {e}")
         await interaction.response.send_message("An error occurred while logging the promotion.", ephemeral=True)
-
+'''
 # ===========================
 # STAFF MANAGEMENT ==============================================================
 # =========================== ============================================
@@ -889,7 +890,7 @@ async def rank_request(
         await interaction.response.send_message("An error occurred while submitting your rank request.", ephemeral=True)
 
 
-
+'''
 # TICKET SYSTEM USING TICKET TOOLS ==============================
 # Command to send the embed message with dropdown menu
 # Adding a slash command version of the TicketMenu with optional input to enable/disable select options
@@ -1014,7 +1015,7 @@ async def ticket_menu_slash(
     else:
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
 
-
+'''
 ## CUSTOM TICKET RESPONSE ALIASES -------------------------------------------------------------------------------
 
 # Custom ticket response commands
